@@ -107,5 +107,3 @@ jobs:
 Feel free to open an issue or submit a pull request if you want to add new news scrapers or email templates.
 
 ---
-
-**Would you like me to provide the Python script (`main.py`) that handles the news scraping and LLM logic?**
