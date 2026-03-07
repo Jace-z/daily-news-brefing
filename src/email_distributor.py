@@ -33,7 +33,7 @@ class EmailDistributor:
             "from": self.sender_email,
             "to": [to_email],
             "subject": subject,
-            "text": content
+            "html": content
         }
         response = requests.post(url, headers=headers, json=data)
         if response.status_code in [200, 201]:
@@ -52,7 +52,7 @@ class EmailDistributor:
             "personalizations": [{"to": [{"email": to_email}]}],
             "from": {"email": self.sender_email},
             "subject": subject,
-            "content": [{"type": "text/plain", "value": content}]
+            "content": [{"type": "text/html", "value": content}]
         }
         response = requests.post(url, headers=headers, json=data)
         if response.status_code in [200, 202]:

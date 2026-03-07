@@ -29,7 +29,10 @@ class GeminiSummarizer:
         prompt = (
             "You are a professional news editor. Please provide a concise daily briefing "
             "based on the following articles. Focus on key takeaways and deduplicate "
-            "similar stories."
+            "similar stories.\n\n"
+            "Format the output as clean HTML suitable for an email body. "
+            "Use <h1> for the title, <h2> for section headers, <ul> and <li> for bullet points, "
+            "and <strong> for emphasis. Do not include <html> or <body> tags, just the content."
         )
 
         if user_interests:
