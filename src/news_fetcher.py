@@ -53,9 +53,22 @@ class NewsFetcher:
         return articles
 
 if __name__ == "__main__":
+    from dotenv import load_dotenv
+    load_dotenv()
+    
     # Test RSS fetching
-    fetcher = NewsFetcher()
+    fetcher = NewsFetcher(news_api_key=os.getenv("NEWS_API_KEY"))
     rss_articles = fetcher.fetch_rss_feed("https://feeds.bbci.co.uk/news/rss.xml")
     print(f"Fetched {len(rss_articles)} articles from BBC RSS.")
     for art in rss_articles[:3]:
         print(f"- {art['title']}")
+        
+    # Test NewsAPI fetching
+    if fetcher.news_api_key:
+        print("\nTesting NewsAPI with query 'AI'...")
+        api_articles = fetcher.fetch_news_api("AI")
+        print(f"Fetched {len(api_articles)} articles from NewsAPI.")
+        for art in api_articles[:3]:
+            print(f"- {art['title']} (Source: {art['source']})")
+    else:
+        print("\nNo NEWS_API_KEY found in .env, skipping NewsAPI test.")

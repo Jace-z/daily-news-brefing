@@ -7,9 +7,9 @@ class GeminiSummarizer:
     Summarizes news articles using Gemini 1.5 Flash on Vertex AI.
     """
 
-    def __init__(self, project_id: str, location: str = "us-central1"):
-        vertexai.init(project=project_id, location=location)
-        self.model = GenerativeModel("gemini-1.5-flash-002")
+    def __init__(self, project_id: str, location: str = "global"):
+        vertexai.init(project=project_id, location="global")
+        self.model = GenerativeModel("gemini-3.1-flash-lite-preview")
 
     def summarize_articles(self, articles: List[Dict], user_interests: List[str] = None) -> str:
         """
