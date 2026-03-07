@@ -1,0 +1,6 @@
+google-cloud-aiplatform
+google-cloud-firestore
+google-cloud-secret-manager
+feedparser
+requests
+python-dotenv
