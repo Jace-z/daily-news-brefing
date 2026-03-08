@@ -1,109 +1,87 @@
-# DailyNews AI Agent 📰
+# Daily News Briefing AI Agent 📰
 
-An automated LLM-powered pipeline that aggregates global news, synthesizes key takeaways, and delivers a concise daily brief directly to your inbox.
+An automated, serverless pipeline that aggregates global news, synthesizes key takeaways using Gemini 1.5 Flash, and delivers a concise daily brief directly to your inbox.
 
 ---
 
 ## ✨ Features
 
-* **Intelligent Summarization**: Uses GPT-4o / Claude 3.5 to transform long articles into 3-bullet point summaries.
-* **Custom Topics**: Configure the agent to follow specific industries, stocks, or regions.
-* **Automated Delivery**: Scheduled via GitHub Actions or Cron to hit your inbox every morning.
-* **Source Verification**: Cross-references multiple sources to reduce bias and identify key facts.
+*   **Intelligent Summarization**: Leverages **Gemini 1.5 Flash** via Vertex AI for high-performance, cost-effective news synthesis.
+*   **Serverless Architecture**: Fully managed execution using **Cloud Run Jobs**, ensuring zero idle costs.
+*   **User Preferences**: Personalized news topics and delivery settings stored in **Cloud Firestore**.
+*   **Reliable Delivery**: Integrated with **Resend/SendGrid** REST APIs to ensure high deliverability.
+*   **Deduplication**: Tracks "last-sent" timestamps in Firestore to prevent redundant summaries.
+
+---
+
+## 🏗️ Infrastructure Design
+
+*   **Trigger**: **Cloud Scheduler** – A managed cron service to trigger the workflow once daily.
+*   **Compute**: **Cloud Run Jobs** – Executes containerized tasks that scale to zero and shut down immediately after completion.
+*   **Intelligence**: **Gemini 1.5 Flash (Vertex AI)** – Provides a massive 1M+ token context window for deep summarization at a lightweight price point.
+*   **Database**: **Cloud Firestore (Native Mode)** – Serverless NoSQL database for managing user profiles and state.
+*   **Email Gateway**: **Resend / SendGrid** – REST API-based email delivery to bypass traditional SMTP restrictions.
 
 ---
 
 ## 🛠️ Tech Stack
 
 | Component | Technology |
-| --- | --- |
-| **Language** | Python 3.10+ |
-| **LLM Framework** | LangChain / CrewAI |
-| **Data Sources** | NewsAPI / RSS Feeds / BeautifulSoup |
-| **Email Service** | SendGrid / Amazon SES / SMTP |
-| **Automation** | GitHub Actions |
-
----
-
-## 🚀 Quick Start
-
-### 1. Clone the Repository
-
-```bash
-git clone https://github.com/yourusername/daily-news-brief.git
-cd daily-news-brief
-
-```
-
-### 2. Environment Setup
-
-Create a `.env` file in the root directory:
-
-```env
-# API Keys
-OPENAI_API_KEY=your_openai_key
-NEWS_API_KEY=your_newsapi_org_key
-
-# Email Configuration
-SMTP_SERVER=smtp.gmail.com
-SMTP_PORT=587
-SENDER_EMAIL=your-bot@gmail.com
-SENDER_PASSWORD=your-app-password
-RECIPIENT_EMAIL=you@example.com
-
-```
-
-### 3. Install Dependencies
-
-```bash
-pip install -r requirements.txt
-
-```
-
-### 4. Run Manually
-
-```bash
-python src/main.py
-
-```
+| :--- | :--- |
+| **Cloud Provider** | Google Cloud Platform (GCP) |
+| **Runtime** | Python 3.11+ / Docker |
+| **LLM** | Gemini 1.5 Flash (Vertex AI) |
+| **Database** | Cloud Firestore |
+| **Scheduler** | Cloud Scheduler |
+| **Email** | Resend or SendGrid (REST API) |
 
 ---
 
 ## 🤖 Pipeline Architecture
 
-1. **Ingestion**: Scrapes top headlines from configured RSS feeds and News APIs.
-2. **Filtering**: The LLM agent discards clickbait and redundant stories.
-3. **Synthesis**: The agent writes a cohesive brief in Markdown/HTML.
-4. **Distribution**: The system packages the brief and sends it via the configured SMTP server.
+1.  **Trigger**: Cloud Scheduler sends a request to start the Cloud Run Job.
+2.  **Fetch**: The job retrieves user profiles and news preferences from Firestore.
+3.  **Ingest**: Aggregates latest headlines and articles from configured RSS feeds and News APIs.
+4.  **Analyze**: Gemini 1.5 Flash processes the aggregated content, deduplicates stories, and generates a personalized summary.
+5.  **Store**: Updates Firestore with the "last-sent" timestamp and history.
+6.  **Distribute**: Sends the final brief via Resend/SendGrid REST API.
 
 ---
 
-## 📅 Automation (GitHub Actions)
+## 🚀 Deployment
 
-To run this daily at 8:00 AM UTC, use the provided `.github/workflows/daily_brief.yml`:
+### 1. GCP Project Setup
+```bash
+gcloud auth login
+gcloud config set project [YOUR_PROJECT_ID]
+gcloud services enable run.googleapis.com cloudscheduler.googleapis.com aiplatform.googleapis.com firestore.googleapis.com
+```
 
-```yaml
-name: Daily News Brief
-on:
-  schedule:
-    - cron: '0 8 * * *'
-jobs:
-  build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Run Agent
-        run: python src/main.py
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-          # ... add other secrets here
+### 2. Environment Variables
+Configure your secrets in GCP Secret Manager or via environment variables in the Cloud Run Job:
+*   `PROJECT_ID`: Your GCP Project ID
+*   `LOCATION`: GCP Region (e.g., `us-central1`)
+*   `EMAIL_API_KEY`: API Key for Resend or SendGrid
+*   `SENDER_EMAIL`: Verified sender address
 
+### 3. Build and Deploy
+```bash
+# Build the container
+gcloud builds submit --tag gcr.io/[PROJECT_ID]/daily-news-brief
+
+# Create the Cloud Run Job
+gcloud run jobs create daily-news-job --image gcr.io/[PROJECT_ID]/daily-news-brief
+
+# Schedule it
+gcloud scheduler jobs create http daily-news-trigger \
+    --schedule="0 8 * * *" \
+    --uri="https://[REGION]-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/[PROJECT_ID]/jobs/daily-news-job:run" \
+    --http-method=POST \
+    --oauth-service-account-email=[SERVICE_ACCOUNT_EMAIL]
 ```
 
 ---
 
 ## 🤝 Contributing
 
-Feel free to open an issue or submit a pull request if you want to add new news scrapers or email templates.
-
----
+Contributions are welcome! Please open an issue or submit a pull request for new feature ideas or bug fixes.
