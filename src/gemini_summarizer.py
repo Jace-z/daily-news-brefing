@@ -1,22 +1,27 @@
-import vertexai
-from vertexai.generative_models import GenerativeModel, Part
+from google import genai
 from typing import List, Dict
+import os
 
 class GeminiSummarizer:
     """
-    Summarizes news articles using Gemini 1.5 Flash on Vertex AI.
+    Summarizes news articles using Gemini 3.1 Flash-Lite on Vertex AI via the google-genai SDK.
     """
 
     def __init__(self, project_id: str, location: str = "global"):
-        vertexai.init(project=project_id, location="global")
-        self.model = GenerativeModel("gemini-3.1-flash-lite-preview")
+        # Initialize the GenAI client configured for Vertex AI
+        self.client = genai.Client(
+            vertexai=True,
+            project=project_id,
+            location=location
+        )
+        self.model_id = "gemini-3.1-flash-lite-preview"
 
     def summarize_articles(self, articles: List[Dict], user_interests: List[str] = None) -> str:
         """
         Generates a summary of the provided articles.
         """
         if not articles:
-            return "No new articles found today."
+            return "<p>No new articles found today.</p>"
 
         # Prepare context
         context = "Here are today's news headlines and summaries:\n\n"
@@ -40,13 +45,38 @@ class GeminiSummarizer:
 
         prompt += f"\n\nArticles:\n{context}\n\nSummary:"
 
-        # Generate content
-        response = self.model.generate_content(prompt)
+        # Generate content using the new SDK
+        response = self.client.models.generate_content(
+            model=self.model_id,
+            contents=prompt
+        )
+        
         return response.text
 
 if __name__ == "__main__":
-    # Test (requires GCP authentication)
-    # summarizer = GeminiSummarizer(project_id="your-project-id")
-    # articles = [{"title": "Test article", "summary": "This is a test summary", "source": "Test Source"}]
-    # print(summarizer.summarize_articles(articles))
-    pass
+    from dotenv import load_dotenv
+    load_dotenv()
+    
+    project_id = os.getenv("PROJECT_ID")
+    # Force global for 3.1 lite test
+    location = "global"
+    
+    print(f"Testing GeminiSummarizer with google-genai in {location}...")
+    
+    summarizer = GeminiSummarizer(project_id=project_id, location=location)
+    sample_articles = [
+        {
+            "title": "SpaceX Launches Next-Gen Starlink Satellites",
+            "summary": "SpaceX successfully launched a batch of its next-generation Starlink satellites today, aimed at increasing bandwidth and reducing latency.",
+            "source": "SpaceNews"
+        }
+    ]
+    
+    try:
+        summary = summarizer.summarize_articles(sample_articles, user_interests=["Space", "Tech"])
+        print("\nSummary Generated Successfully:")
+        print("-" * 30)
+        print(summary)
+        print("-" * 30)
+    except Exception as e:
+        print(f"Error during testing: {e}")
