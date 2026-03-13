@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from infrastructure.firestore_client import FirestoreClient
+from infrastructure.db_factory import get_db_client
 
 load_dotenv()
 
@@ -10,7 +10,7 @@ def seed():
         print("Error: PROJECT_ID not found in .env")
         return
 
-    db = FirestoreClient(project_id=PROJECT_ID)
+    db = get_db_client(project_id=PROJECT_ID)
     
     test_user_id = "test_user_001"
     test_email = os.getenv("SENDER_EMAIL") # Sending the brief to yourself for testing

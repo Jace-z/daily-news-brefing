@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from news_fetcher import NewsFetcher
 from gemini_summarizer import GeminiSummarizer
-from infrastructure.firestore_client import FirestoreClient
+from infrastructure.db_factory import get_db_client
 from email_distributor import EmailDistributor
 from email_formatter import format_as_html
 from google.cloud import secretmanager
@@ -40,7 +40,7 @@ def main():
     # Initialize Clients
     fetcher = NewsFetcher(news_api_key=NEWS_API_KEY)
     summarizer = GeminiSummarizer(project_id=PROJECT_ID)
-    db = FirestoreClient(project_id=PROJECT_ID)
+    db = get_db_client(project_id=PROJECT_ID)
     distributor = EmailDistributor(api_key=EMAIL_API_KEY, sender_email=SENDER_EMAIL, provider=EMAIL_PROVIDER)
 
     # 1. Fetch User Profiles
