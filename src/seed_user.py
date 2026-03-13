@@ -1,21 +1,23 @@
 import os
 from dotenv import load_dotenv
 from infrastructure.db_factory import get_db_client
+from infrastructure.init_sqlite import init_db
 
 load_dotenv()
 
 def seed():
     PROJECT_ID = os.getenv("PROJECT_ID")
-    if not PROJECT_ID:
-        print("Error: PROJECT_ID not found in .env")
-        return
+    DB_PROVIDER = os.getenv("DB_PROVIDER", "firestore").lower()
+    
+    if DB_PROVIDER == "sqlite":
+        init_db()
 
     db = get_db_client(project_id=PROJECT_ID)
     
     test_user_id = "test_user_001"
     test_email = os.getenv("SENDER_EMAIL") # Sending the brief to yourself for testing
     
-    print(f"Adding test user to Firestore (Project: {PROJECT_ID})...")
+    print(f"Adding test user to {DB_PROVIDER}...")
     
     db.add_user(
         user_id=test_user_id,
