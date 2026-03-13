@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from firestore_client import FirestoreClient
+from infrastructure.firestore_client import FirestoreClient
 
 load_dotenv()
 

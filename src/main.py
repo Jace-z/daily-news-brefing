@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 from dotenv import load_dotenv
 from news_fetcher import NewsFetcher
 from gemini_summarizer import GeminiSummarizer
-from firestore_client import FirestoreClient
+from infrastructure.firestore_client import FirestoreClient
 from email_distributor import EmailDistributor
 from email_formatter import format_as_html
 from google.cloud import secretmanager
